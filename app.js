@@ -17,6 +17,15 @@ app.get('/', function(req, res) {
 
 app.get('/oembed.json', function(req, res) {
   var params = req.query;
+
+  if (params.height) {
+    params.height = Number(params.height);
+  }
+
+  if (params.width) {
+    params.width = Number(params.width);
+  }
+
   var json = Object.assign({
     type: 'rich',
     html: `<iframe border="0" src="${params.url}"/>`
