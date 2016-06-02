@@ -110,7 +110,7 @@ describe('magnet-oembed-service', function() {
   });
 
   describe('json', function() {
-    describe('type', function() {
+    describe('defaults', function() {
       beforeEach(function(done) {
         request(app)
           .get(`/oembed.json?url=${TEST_URL_ENCODED}`)
@@ -121,8 +121,22 @@ describe('magnet-oembed-service', function() {
           });
       });
 
-      it('defaults to "rich"', function() {
-        assert.equal(this.body.type, 'rich');
+      describe('type', function() {
+        it('defaults to "rich"', function() {
+          assert.equal(this.body.type, 'rich');
+        });
+      });
+
+      describe('width', function() {
+        it('defaults to 300', function() {
+          assert.equal(this.body.width, 300);
+        });
+      });
+
+      describe('height', function() {
+        it('defaults to 600', function() {
+          assert.equal(this.body.height, 600);
+        });
       });
     });
 
