@@ -126,6 +126,26 @@ describe('magnet-oembed-service', function() {
       });
     });
 
+    describe('numbers', function() {
+      beforeEach(function(done) {
+        request(app)
+          .get(`/oembed.json?url=${TEST_URL_ENCODED}&width=300&height=600&thumbnail_width=300&thumbnail_height=600&cache_age=30`)
+          .end((err, res) => {
+            if (err) throw err;
+            this.body = res.body;
+            done();
+          });
+      });
+
+      it('are typeof Number', function() {
+        assert.strictEqual(this.body.width, 300);
+        assert.strictEqual(this.body.height, 600);
+        assert.strictEqual(this.body.thumbnail_height, 600);
+        assert.strictEqual(this.body.thumbnail_width, 300);
+        assert.strictEqual(this.body.cache_age, 30);
+      });
+    });
+
     describe('html', function() {
       describe('defined', function() {
         beforeEach(function(done) {

@@ -17,19 +17,28 @@ app.get('/', function(req, res) {
 
 app.get('/oembed.json', function(req, res) {
   var params = req.query;
-
-  if (params.height) {
-    params.height = Number(params.height);
-  }
-
-  if (params.width) {
-    params.width = Number(params.width);
-  }
-
   var json = Object.assign({
     type: 'rich',
     html: `<iframe border="0" src="${params.url}"/>`
   }, params);
 
+  coerce(json, [
+    'width',
+    'height',
+    'thumbnail_width',
+    'thumbnail_height',
+    'cache_age'
+  ], Number)
+
   res.json(json);
 });
+
+/**
+ * Utils
+ */
+
+function coerce(object, keys, type) {
+  keys.forEach(key => {
+    object[key] = type(object[key]);
+  });
+}
