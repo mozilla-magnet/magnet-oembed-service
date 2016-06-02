@@ -8,7 +8,12 @@ const qs = require('querystring');
 
 app.set('view engine', 'ejs');
 
-app.get('/', function(req, res) {
+app.get('/', function(req, res, next) {
+  var url = req.query.url;
+
+  // everything breaks if we don't have a url parameter
+  if (!url) return next(new Error('requires `url` parameter'));
+
   res.render('index', {
     url: req.query.url,
     query: qs.stringify(req.query)
@@ -17,6 +22,7 @@ app.get('/', function(req, res) {
 
 app.get('/oembed.json', function(req, res) {
   var params = req.query;
+
   var json = Object.assign({
     type: 'rich',
     width: 300,
@@ -35,12 +41,26 @@ app.get('/oembed.json', function(req, res) {
   res.json(json);
 });
 
+// hit when no route is matched
+app.use(function(req, res) {
+  res.status(404);
+  res.send(`Error 404: "page not found"`);
+});
+
+// hit when `next(new Error())`
+app.use(function(err, req, res, next) { // eslint-disable-line
+  res.status(500);
+  res.send(`Error 500: "${err.message}"`);
+});
+
 /**
  * Utils
  */
 
 function coerce(object, keys, type) {
   keys.forEach(key => {
-    object[key] = type(object[key]);
+    var value = object[key];
+    if (value === undefined) return;
+    object[key] = type(value);
   });
 }

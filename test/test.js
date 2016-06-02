@@ -16,6 +16,10 @@ var url = require('url');
 var TEST_URL = 'https://wilsonpage.github.io/amazing.html?id=123';
 var TEST_URL_ENCODED = encodeURIComponent(TEST_URL);
 
+/**
+ * Tests
+ */
+
 describe('magnet-oembed-service', function() {
   describe('html', function() {
     beforeEach(function(done) {
@@ -107,6 +111,70 @@ describe('magnet-oembed-service', function() {
         assert.equal(content, `0;url=${TEST_URL}`);
       });
     });
+
+    describe('missing url parameter', function() {
+      beforeEach(function(done) {
+        request(app)
+          .get('/')
+          .end((err, res) => {
+            this.res = res;
+            done();
+          });
+      });
+
+      it('has a 500 status-code', function() {
+        assert.equal(this.res.statusCode, 500);
+      });
+
+      it('has a message in response body', function() {
+        assert.equal(this.res.text, 'Error 500: "requires `url` parameter"');
+      });
+    });
+
+    describe('complex', function() {
+      beforeEach(function(done) {
+        this.url = 'https://www.google.co.uk/maps/place/Mozilla/@51.5103676,-0.1292982,17z/data=!3m1!4b1!4m5!3m4!1s0x487604cddabe1063:0x1c87a03dc31daa0e!8m2!3d51.5103676!4d-0.1271095?hl=en';
+
+        this.html = '<html style="height:100%"><body style="height:100%;margin:0"><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2483.1552563495684!2d-0.12929818422990874!3d51.51036757963562!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487604cddabe1063%3A0x1c87a03dc31daa0e!2sMozilla!5e0!3m2!1sen!2suk!4v1464883733950" style="border:0;width:100%;height:100%" allowfullscreen="" frameborder="0"/></body>';
+
+        var params = `url=${encodeURIComponent(this.url)}&html=${encodeURIComponent(this.html)}`;
+
+        request(app)
+          .get(`/?${params}`)
+          .end((err, res) => {
+            if (err) throw err;
+            this.$ = cheerio.load(res.text);
+            done();
+          });
+      });
+
+      it('has correct redirect', function() {
+        var tag = this.$('meta[http-equiv="refresh"]');
+        assert.equal(tag.attr('content'), `0;url=${this.url}`)
+      });
+
+      describe('oembed json', function() {
+        beforeEach(function(done) {
+          var ombedUrl = this.$('link[type="application/json+oembed"]');
+
+          request(app)
+            .get('/' + ombedUrl.attr('href'))
+            .end((err, res) => {
+              if (err) throw err;
+              this.body = res.body;
+              done();
+            });
+        });
+
+        it('url is correct', function() {
+          assert.equal(this.body.url, this.url);
+        });
+
+        it('html is correct', function() {
+          assert.equal(this.body.html, this.html);
+        });
+      });
+    });
   });
 
   describe('json', function() {
@@ -196,6 +264,25 @@ describe('magnet-oembed-service', function() {
           assert.equal(iframe.attr('src'), TEST_URL);
         });
       });
+    });
+  });
+
+  describe('404', function() {
+    beforeEach(function(done) {
+      request(app)
+        .get('/unknown-page')
+        .end((err, res) => {
+          this.res = res;
+          done();
+        });
+    });
+
+    it('has 404 status code', function() {
+      assert.strictEqual(this.res.statusCode, 404);
+    });
+
+    it('has a message body', function() {
+      assert.equal(this.res.text, 'Error 404: "page not found"');
     });
   });
 });
