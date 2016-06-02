@@ -108,4 +108,60 @@ describe('magnet-oembed-service', function() {
       });
     });
   });
+
+  describe('json', function() {
+    describe('type', function() {
+      beforeEach(function(done) {
+        request(app)
+          .get(`/oembed.json?url=${TEST_URL_ENCODED}`)
+          .end((err, res) => {
+            if (err) throw err;
+            this.body = res.body;
+            done();
+          });
+      });
+
+      it('defaults to "rich"', function() {
+        assert.equal(this.body.type, 'rich');
+      });
+    });
+
+    describe('html', function() {
+      describe('defined', function() {
+        beforeEach(function(done) {
+          var html = encodeURIComponent('<h1>hello</h1>');
+          request(app)
+            .get(`/oembed.json?url=${TEST_URL_ENCODED}&html=${html}`)
+            .end((err, res) => {
+              if (err) throw err;
+              this.body = res.body;
+              this.$ = cheerio.load(this.body.html);
+              done();
+            });
+        });
+
+        it('uses `html` when given', function() {
+          assert.equal(this.$('h1').html(), 'hello');
+        });
+      });
+
+      describe('undefined', function() {
+        beforeEach(function(done) {
+          request(app)
+            .get(`/oembed.json?url=${TEST_URL_ENCODED}`)
+            .end((err, res) => {
+              if (err) throw err;
+              this.body = res.body;
+              this.$ = cheerio.load(this.body.html);
+              done();
+            });
+        });
+
+        it('defaults to `<frame>`', function() {
+          var iframe = this.$('iframe');
+          assert.equal(iframe.attr('src'), TEST_URL);
+        });
+      });
+    });
+  });
 });
