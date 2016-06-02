@@ -1,4 +1,4 @@
-## magnet-oembed-service
+# magnet-oembed-service ![build status](https://travis-ci.org/mozilla-magnet/magnet-oembed-service.svg?branch=master)
 
 Facilitates serverless oembed content.
 
@@ -6,7 +6,7 @@ Facilitates serverless oembed content.
 <SERVICE_ENDPOINT>/?url=http%3A%2F%2Fwilsonpage.github.io%2Fmy-page.html&width=300&height=200
 ```
 
-### Parameters
+## Parameters
 
 - `url` - (required) The URL of the HTML content to embed
 - `type` - `photo`, `video`, `link`, `rich` (defaults to `rich`)
@@ -21,5 +21,7 @@ Facilitates serverless oembed content.
 - `thumbnail_url` - (optional)
 - `thumbnail_width` - (optional)
 - `thumbnail_height` - (optional)
+
+---
 
 > For more detail read the [oembed spec](http://oembed.com/)
